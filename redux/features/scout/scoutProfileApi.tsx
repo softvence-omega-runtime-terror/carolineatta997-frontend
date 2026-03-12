@@ -3,17 +3,26 @@ import { ScoutProfile } from "@/types/scout/profileType";
 
 export const scoutProfileApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // GET — API returns array, pick first item
-    getProfile: builder.query<ScoutProfile, void>({
+    // GET — handles wrapped {success, data} envelope + array or single object
+    getProfile: builder.query<ScoutProfile | null, void>({
       query: () => "/scout-agent/profile/",
-      transformResponse: (response: ScoutProfile[] | ScoutProfile) => {
-        if (Array.isArray(response)) return response[0];
-        return response;
+      transformResponse: (response: any): ScoutProfile | null => {
+        // Unwrap {success: true, data: ...} envelope
+        const payload = response?.data ?? response;
+        // Handle array response — take first item
+        if (Array.isArray(payload)) {
+          return payload.length > 0 ? (payload[0] as ScoutProfile) : null;
+        }
+        // Handle single object
+        if (payload && typeof payload === "object" && payload.id !== undefined) {
+          return payload as ScoutProfile;
+        }
+        return null;
       },
       providesTags: ["ScoutProfile"],
     }),
 
-    // PATCH — update existing profile, id is dynamic
+    // PATCH — update existing profile
     updateProfile: builder.mutation<
       ScoutProfile,
       { id: number; data: FormData | Partial<ScoutProfile> }

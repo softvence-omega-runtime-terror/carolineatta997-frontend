@@ -1,268 +1,339 @@
+"use client";
+
 import React from "react";
-import {
-  Eye,
-  Star,
-  Calendar,
-  MessageSquare,
-  Search,
-  Bell,
-  Plus,
-  LayoutDashboard,
-  Users,
-  Settings,
-  ChevronRight,
-} from "lucide-react";
+import { Eye, Star, CalendarDays, MessageSquare } from "lucide-react";
 
-// --- Types ---
+/* ─── Fake Data ─────────────────────────────────────────────── */
+const shortlistedPlayers = [
+  {
+    name: "John Doe",
+    position: "Midfielder",
+    nationality: "Spain",
+    flag: "🇪🇸",
+    age: 19,
+    image: "https://randomuser.me/api/portraits/men/32.jpg",
+  },
+  {
+    name: "Sarah Player",
+    position: "Forward",
+    nationality: "Portugal",
+    flag: "🇵🇹",
+    age: 18,
+    image: "https://randomuser.me/api/portraits/women/44.jpg",
+  },
+  {
+    name: "Mike Johnson",
+    position: "Defender",
+    nationality: "France",
+    flag: "🇫🇷",
+    age: 20,
+    image: "https://randomuser.me/api/portraits/men/65.jpg",
+  },
+];
 
-interface Stat {
+const upcomingEvents = [
+  {
+    title: "Elite Youth Trial",
+    club: "Elite Football Academy",
+    location: "Madrid, Spain",
+    date: "15/09/2025",
+    time: "10:00 AM",
+    logo: "https://ui-avatars.com/api/?name=EFA&background=1a1a3e&color=00e5ff&size=48&bold=true",
+  },
+  {
+    title: "Football Academy Showcase",
+    club: "FC Barcelona Youth",
+    location: "Barcelona, Spain",
+    date: "20/09/2025",
+    time: "2:00 PM",
+    logo: "https://ui-avatars.com/api/?name=FCB&background=a50044&color=fff&size=48&bold=true",
+  },
+  {
+    title: "Talent Scouting Day",
+    club: "Portuguese FA",
+    location: "Lisbon, Portugal",
+    date: "25/09/2025",
+    time: "9:00 AM",
+    logo: "https://ui-avatars.com/api/?name=FPF&background=006600&color=fff&size=48&bold=true",
+  },
+];
+
+const recentViews = [
+  { name: "Player 1", position: "Midfielder", nationality: "Spain", time: "2h ago", avatar: "https://randomuser.me/api/portraits/men/11.jpg" },
+  { name: "Player 2", position: "Midfielder", nationality: "Spain", time: "2h ago", avatar: "https://randomuser.me/api/portraits/men/22.jpg" },
+  { name: "Player 3", position: "Midfielder", nationality: "Spain", time: "2h ago", avatar: "https://randomuser.me/api/portraits/men/33.jpg" },
+  { name: "Player 4", position: "Midfielder", nationality: "Spain", time: "2h ago", avatar: "https://randomuser.me/api/portraits/men/44.jpg" },
+];
+
+const recentMessages = [
+  {
+    name: "John Doe",
+    preview: "Thank you for reaching out...",
+    time: "2h ago",
+    unread: true,
+    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+  },
+  {
+    name: "FC Barcelona Youth",
+    preview: "We have updated the event...",
+    time: "5h ago",
+    unread: true,
+    avatar: "https://ui-avatars.com/api/?name=FCB&background=a50044&color=fff&size=48&bold=true",
+  },
+  {
+    name: "Sarah Player",
+    preview: "I appreciate your interest...",
+    time: "1d ago",
+    unread: false,
+    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+  },
+];
+
+/* ─── Stat Card ─────────────────────────────────────────────── */
+interface StatCardProps {
+  icon: React.ReactNode;
   label: string;
   value: string | number;
-  subValue: string;
-  icon: React.ReactNode;
+  sub: string;
+  iconColor: string;
   subColor: string;
 }
 
-interface Player {
-  id: string;
-  name: string;
-  role: string;
-  nationality: string;
-  age: number;
-  image: string;
-  isTopProspect?: boolean;
-}
-
-interface ScoutingEvent {
-  id: string;
-  title: string;
-  date: { month: string; day: string };
-  time: string;
-  location: string;
-}
-
-// --- Sub-components ---
-
-const StatCard: React.FC<Stat> = ({
-  label,
-  value,
-  subValue,
-  icon,
-  subColor,
-}) => (
-  <div className="bg-[#0f172a] border border-slate-800 rounded-2xl p-4 flex flex-col gap-2">
-    <div className="flex justify-between items-start">
-      <div className="p-2 bg-slate-800/50 rounded-lg text-cyan-400">{icon}</div>
-      <span className={`text-[10px] font-medium ${subColor}`}>{subValue}</span>
-    </div>
-    <div className="mt-2">
-      <p className="text-slate-400 text-xs uppercase tracking-wider font-semibold">
-        {label}
-      </p>
-      <p className="text-2xl font-bold text-white mt-1">{value}</p>
-    </div>
+const StatCard = ({ icon, label, value, sub, iconColor, subColor }: StatCardProps) => (
+  <div className="bg-[#12143A] border border-white/[0.07] rounded-xl p-5 flex flex-col gap-1">
+    <div className={`mb-1 ${iconColor}`}>{icon}</div>
+    <p className="text-xs text-white/50 uppercase tracking-wide">{label}</p>
+    <p className="text-3xl font-bold text-white">{value}</p>
+    <p className={`text-xs font-medium ${subColor}`}>{sub}</p>
   </div>
 );
 
-const PlayerCard: React.FC<Player> = ({
-  name,
-  role,
-  nationality,
-  age,
-  image,
-  isTopProspect,
-}) => (
-  <div className="relative min-w-[240px] bg-[#0f172a] border border-slate-800 rounded-3xl overflow-hidden group">
-    <div className="h-64 overflow-hidden relative">
-      <img src={image} alt={name} className="w-full h-full object-cover" />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent" />
-      {isTopProspect && (
-        <span className="absolute top-4 left-4 bg-cyan-500 text-black text-[10px] font-bold px-2 py-1 rounded-md uppercase">
-          Top Prospect
-        </span>
-      )}
-    </div>
-    <div className="p-5 -mt-12 relative z-10">
-      <h4 className="text-white text-lg font-bold">{name}</h4>
-      <p className="text-slate-400 text-sm">
-        {role}, {nationality}, {age}
-      </p>
-      <button className="w-full mt-4 py-3 bg-cyan-500 hover:bg-cyan-400 text-black font-bold rounded-xl transition-colors text-sm">
-        View Full Profile
-      </button>
-    </div>
-  </div>
-);
-
-const EventItem: React.FC<ScoutingEvent> = ({
-  title,
-  date,
-  time,
-  location,
-}) => (
-  <div className="flex items-center gap-4 p-4 bg-[#0f172a] border border-slate-800 rounded-2xl group cursor-pointer hover:border-slate-700 transition-colors">
-    <div className="flex flex-col items-center justify-center w-14 h-14 bg-slate-800/50 rounded-xl text-center">
-      <span className="text-[10px] uppercase font-bold text-purple-400">
-        {date.month}
-      </span>
-      <span className="text-xl font-bold text-white leading-tight">
-        {date.day}
-      </span>
-    </div>
-    <div className="flex-1">
-      <h4 className="text-white font-semibold text-sm">{title}</h4>
-      <div className="flex items-center gap-2 text-slate-500 text-xs mt-1">
-        <div className="flex items-center gap-1">
-          <Calendar size={12} />
-          <span>{time}</span>
-        </div>
-        <span>•</span>
-        <span>{location}</span>
-      </div>
-    </div>
-    <ChevronRight
-      size={18}
-      className="text-slate-600 group-hover:text-cyan-400 transition-colors"
-    />
-  </div>
-);
-
-// --- Main Component ---
-
+/* ─── Main Component ─────────────────────────────────────────── */
 const ScoutDashboard: React.FC = () => {
-  const stats: Stat[] = [
-    {
-      label: "Players Viewed",
-      value: "342",
-      subValue: "+48 wk",
-      icon: <Eye size={20} />,
-      subColor: "text-cyan-400",
-    },
-    {
-      label: "Shortlisted",
-      value: "28",
-      subValue: "12 Active",
-      icon: <Star size={20} />,
-      subColor: "text-purple-400",
-    },
-    {
-      label: "Events",
-      value: "6",
-      subValue: "Sep 15",
-      icon: <Calendar size={20} />,
-      subColor: "text-orange-400",
-    },
-    {
-      label: "Messages",
-      value: "15",
-      subValue: "5 Unread",
-      icon: <MessageSquare size={20} />,
-      subColor: "text-emerald-400",
-    },
-  ];
-
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-200 font-sans pb-24">
-      {/* Header */}
-      <header className="px-6 pt-8 pb-6 flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full border-2 border-emerald-500 p-0.5 overflow-hidden">
-            <img
-              src="https://api.dicebear.com/7.x/avataaars/svg?seed=Mike"
-              alt="Profile"
-              className="w-full h-full rounded-full object-cover"
-            />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-white">
-              Welcome Back,{" "}
-              <span className="text-purple-500 font-extrabold italic">
-                Mike!
-              </span>
-            </h1>
-            <p className="text-slate-500 text-xs">
-              Head Scout • Manchester United
-            </p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <button className="p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 hover:text-white transition-colors">
-            <Search size={20} />
-          </button>
-          <button className="p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 hover:text-white relative transition-colors">
-            <Bell size={20} />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-orange-500 rounded-full border-2 border-slate-900" />
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#0B0D2C] text-white font-sans pb-12">
 
-      {/* Stats Grid */}
-      <section className="px-6 grid grid-cols-2 gap-4 mb-10">
-        {stats.map((stat, i) => (
-          <StatCard key={i} {...stat} />
-        ))}
+      {/* Welcome Heading */}
+      <div className="px-6 pt-6 pb-2">
+        <h1 className="text-2xl font-bold">
+          Welcome Back,{" "}
+          <span className="bg-gradient-to-r from-[#00E5FF] to-[#9C27B0] bg-clip-text text-transparent">
+            Mike!
+          </span>
+        </h1>
+      </div>
+
+      {/* ── Stats ── */}
+      <section className="px-6 py-5 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard
+          icon={<Eye size={24} />}
+          label="Players Viewed"
+          value={342}
+          sub="+48 this week"
+          iconColor="text-[#00E5FF]"
+          subColor="text-[#00E5FF]"
+        />
+        <StatCard
+          icon={<Star size={24} />}
+          label="Shortlisted Players"
+          value={28}
+          sub="12 active"
+          iconColor="text-[#9C27B0]"
+          subColor="text-[#9C27B0]"
+        />
+        <StatCard
+          icon={<CalendarDays size={24} />}
+          label="Upcoming Events"
+          value={6}
+          sub="Next: Sep 15"
+          iconColor="text-[#00E5FF]"
+          subColor="text-[#00E5FF]"
+        />
+        <StatCard
+          icon={<MessageSquare size={24} />}
+          label="Active Conversations"
+          value={15}
+          sub="5 unread"
+          iconColor="text-[#00E5FF]"
+          subColor="text-[#00E5FF]"
+        />
       </section>
 
-      {/* Shortlisted Players */}
-      <section className="mb-10">
-        <div className="px-6 flex justify-between items-end mb-6">
-          <h2 className="text-xl font-bold text-white tracking-tight">
-            Shortlisted Players
+      {/* ── Shortlisted Players ── */}
+      <section className="px-6 mb-6">
+        <div className="bg-[#12143A] border border-white/[0.07] rounded-xl p-5">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2">
+              <Star size={18} className="text-yellow-400" fill="currentColor" />
+              <h2 className="text-base font-bold text-white">Shortlisted Players</h2>
+            </div>
+            <button className="text-xs text-[#00E5FF] border border-[#00E5FF]/40 px-3 py-1 rounded-md hover:bg-[#00E5FF]/10 transition-colors">
+              View All
+            </button>
+          </div>
+
+          {/* Player Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {shortlistedPlayers.map((player) => (
+              <div
+                key={player.name}
+                className="bg-[#0B0D2C] border border-white/[0.07] rounded-xl p-4"
+              >
+                {/* Avatar + Star */}
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={player.image}
+                      alt={player.name}
+                      className="w-12 h-12 rounded-full object-cover border border-white/10"
+                    />
+                    <div>
+                      <p className="font-semibold text-sm text-white">{player.name}</p>
+                      <p className="text-xs text-white/50">{player.position}</p>
+                    </div>
+                  </div>
+                  <Star size={14} className="text-yellow-400 mt-1 flex-shrink-0" fill="currentColor" />
+                </div>
+
+                {/* Details */}
+                <div className="space-y-1 mb-4">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-white/45">Nationality:</span>
+                    <span className="text-white/75">
+                      {player.flag} {player.nationality}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-white/45">Age:</span>
+                    <span className="text-white/75">{player.age} years</span>
+                  </div>
+                </div>
+
+                {/* Button */}
+                <button className="w-full py-2 rounded-lg border border-[#00E5FF]/50 text-[#00E5FF] text-xs font-medium hover:bg-[#00E5FF]/10 transition-colors">
+                  View Full Profile
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Upcoming Scouting Events ── */}
+      <section className="px-6 mb-6">
+        <div className="bg-[#12143A] border border-white/[0.07] rounded-xl p-5">
+          <h2 className="text-base font-bold text-white mb-5">
+            Upcoming Scouting Events
           </h2>
-          <button className="text-cyan-400 text-sm font-semibold hover:underline">
-            See all
-          </button>
-        </div>
-        <div className="flex overflow-x-auto gap-4 px-6 no-scrollbar">
-          <PlayerCard
-            id="1"
-            name="John Doe"
-            role="Midfielder"
-            nationality="Spain"
-            age={19}
-            isTopProspect
-            image="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&h=300&fit=crop"
-          />
-          <PlayerCard
-            id="2"
-            name="Sarah Player"
-            role="Forward"
-            nationality="Portugal"
-            age={18}
-            image="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&h=300&fit=crop"
-          />
+
+          <div className="space-y-3">
+            {upcomingEvents.map((event) => (
+              <div
+                key={event.title}
+                className="flex items-center gap-4 bg-[#0B0D2C] border border-white/[0.06] rounded-xl p-4"
+              >
+                {/* Logo */}
+                <img
+                  src={event.logo}
+                  alt={event.club}
+                  className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
+                />
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm text-white">{event.title}</p>
+                  <p className="text-xs text-white/50">{event.club}</p>
+                  <p className="text-xs text-white/40 mt-0.5">{event.location}</p>
+                </div>
+
+                {/* Date & Time */}
+                <div className="text-right flex-shrink-0">
+                  <p className="text-xs text-[#00E5FF] font-medium">{event.date}</p>
+                  <p className="text-xs text-white/45">{event.time}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* View All Events */}
+          <div className="mt-4 text-center">
+            <button className="text-xs text-[#00E5FF] border border-[#00E5FF]/40 px-5 py-2 rounded-lg hover:bg-[#00E5FF]/10 transition-colors w-full">
+              View All Events
+            </button>
+          </div>
         </div>
       </section>
 
-      {/* Scouting Events */}
-      <section className="px-6 mb-10">
-        <h2 className="text-xl font-bold text-white tracking-tight mb-6">
-          Upcoming Scouting Events
-        </h2>
-        <div className="space-y-4">
-          <EventItem
-            id="1"
-            title="Elite Youth Trial"
-            date={{ month: "Sep", day: "12" }}
-            time="10:00 AM"
-            location="London, UK"
-          />
-          <EventItem
-            id="2"
-            title="Academy Showcase"
-            date={{ month: "Sep", day: "15" }}
-            time="02:30 PM"
-            location="Madrid, ES"
-          />
-          <EventItem
-            id="3"
-            title="Talent Scouting Day"
-            date={{ month: "Sep", day: "18" }}
-            time="09:00 AM"
-            location="Berlin, DE"
-          />
+      {/* ── Recent Views + Messages ── */}
+      <section className="px-6 grid md:grid-cols-2 gap-5">
+
+        {/* Recent Player Views */}
+        <div className="bg-[#12143A] border border-white/[0.07] rounded-xl p-5">
+          <h2 className="text-base font-bold text-white mb-4">Recent Player Views</h2>
+
+          <div className="space-y-3">
+            {recentViews.map((player, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 bg-[#0B0D2C] border border-white/[0.06] rounded-xl p-3"
+              >
+                <img
+                  src={player.avatar}
+                  alt={player.name}
+                  className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-white">{player.name}</p>
+                  <p className="text-xs text-white/45">
+                    {player.position} • {player.nationality}
+                  </p>
+                </div>
+                <span className="text-xs text-white/40 whitespace-nowrap">{player.time}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Recent Messages */}
+        <div className="bg-[#12143A] border border-white/[0.07] rounded-xl p-5">
+          <h2 className="text-base font-bold text-white mb-4">Recent Messages</h2>
+
+          <div className="space-y-3">
+            {recentMessages.map((msg, i) => (
+              <div
+                key={i}
+                className="flex items-start gap-3 bg-[#0B0D2C] border border-white/[0.06] rounded-xl p-3"
+              >
+                <img
+                  src={msg.avatar}
+                  alt={msg.name}
+                  className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-white">{msg.name}</p>
+                  <p className="text-xs text-white/45 truncate">{msg.preview}</p>
+                  <p className="text-xs text-white/30 mt-0.5">{msg.time}</p>
+                </div>
+                {msg.unread && (
+                  <span className="w-2 h-2 bg-[#9C27B0] rounded-full mt-1.5 flex-shrink-0" />
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-4 text-center">
+            <button className="text-xs text-[#00E5FF] border border-[#00E5FF]/40 px-5 py-2 rounded-lg hover:bg-[#00E5FF]/10 transition-colors w-full">
+              View All Messages
+            </button>
+          </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="px-6 py-8 text-center text-white/25 text-xs">
+        © 2025 NextGen Pros. All rights reserved.
+      </footer>
     </div>
   );
 };

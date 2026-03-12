@@ -4,6 +4,9 @@ import Feature from "@/components/landingPage/Feature";
 import HowItWorks from "@/components/landingPage/HowItWorks";
 import Navbar from "@/components/sheard/Navbar";
 import Footer from "@/components/sheard/Footer";
+import LatestNews from "@/components/landingPage/LatestNews";
+import UpcomingEvent from "@/components/landingPage/UpcomingEvents";
+import AddSection from "@/components/landingPage/AddSection";
 
 export default function Home() {
   return (
@@ -12,9 +15,13 @@ export default function Home() {
       <main className="w-full font-sans">
         <Banner />
         <Club />
-        <HowItWorks/>
-        <Feature/>
+        <HowItWorks />
+        <Feature />
+        <LatestNews />
+        <UpcomingEvent />
+        <AddSection />
       </main>
+
       <Footer />
     </>
   );

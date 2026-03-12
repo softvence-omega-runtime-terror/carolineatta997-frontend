@@ -47,7 +47,7 @@ const Banner = () => {
   return (
     <section className="relative w-full min-h-screen flex items-center justify-center ">
       {/* Background Image with Enhanced Overlay for Better Readability */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 ">
         <Image
           src="/images/banner.png"
           alt="Stadium Background"
@@ -65,7 +65,6 @@ const Banner = () => {
             alt="NextGen Pros Logo"
             width={200}
             height={200}
-            
             priority
           />
         </div>
@@ -95,8 +94,8 @@ const Banner = () => {
           <button className="w-full sm:w-auto px-8 py-3 bg-[#00E5FF] hover:bg-[#00cce6] text-black font-bold rounded-full text-base md:text-lg transition-all transform hover:scale-105 shadow-lg shadow-[#00E5FF]/20">
             Start Free Trial
           </button>
-          <div className="relative w-full sm:w-auto p-[2px] rounded-full border border-white">
-            <button className="w-full  text-white font-bold rounded-full px-8 py-3 text-base md:text-lg transition-all transform hover:scale-105">
+          <div className="relative w-full sm:w-auto rounded-full ">
+            <button className="w-full  text-white font-bold rounded-full px-7 py-3 border border-[#9C27B0] text-base md:text-lg transition-all transform hover:scale-105">
               Join Community
             </button>
           </div>

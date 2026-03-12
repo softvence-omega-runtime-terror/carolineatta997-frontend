@@ -9,7 +9,7 @@ export const Avatar = ({ player, size = 48 }: { player: DiscoveryPlayer; size?: 
   if (player.profile_image) {
     return (
       <img
-        src={player.profile_image}
+        src={player.profile_image ?? ""}
         alt=""
         className="rounded-full object-cover border-2 border-[#1d3a55] flex-shrink-0"
         style={{ width: size, height: size }}

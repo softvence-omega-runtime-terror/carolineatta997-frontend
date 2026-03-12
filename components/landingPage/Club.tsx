@@ -1,15 +1,9 @@
 "use client";
 
-<<<<<<< HEAD
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Lock } from 'lucide-react';
 import { useSelector } from 'react-redux';
-=======
-import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Lock } from "lucide-react";
-import { useSelector } from "react-redux";
-import HomeButton from "../ui/HomeButton";
->>>>>>> 699ac9eb32942f2d41fe3de5c376fcc4a5c188ec
+import { useAppSelector } from '@/redux/hooks';
 
 const clubs = [
   {
@@ -173,20 +167,10 @@ export default function Club() {
         </div>
 
         {/* View All Button */}
-<<<<<<< HEAD
         <div className="flex justify-center mt-10">
           <button className="px-8 py-2 border border-purple-700 rounded-full text-foreground hover:bg-purple/10 transition-colors flex items-center gap-2 text-white ">
             View All Clubs <Lock size={14} />
           </button>
-=======
-        <div className="flex justify-center mt-12">
-          <HomeButton
-            text={`View All ${activeTab === "clubs" ? "Clubs" : "Academies"}`}
-            icon={<Lock size={18} />}
-            variant="outline"
-            theme={theme}
-          />
->>>>>>> 699ac9eb32942f2d41fe3de5c376fcc4a5c188ec
         </div>
       </div>
     </section>

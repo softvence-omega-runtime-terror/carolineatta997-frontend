@@ -16,7 +16,6 @@ export interface PlayerRegisterPayload {
   current_club_academy: string;
   type_of_commitment: string;
   contract_valid_until: string;
-
   parent_guardian_first_name?: string;
   parent_guardian_last_name?: string;
   parent_id_number?: string;

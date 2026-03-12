@@ -27,6 +27,7 @@ const Page = () => {
   }, [eventType, date, debouncedSearch, page]);
 
   const { data, isLoading, error } = useGetAllEventsQuery(filters);
+  console.log("eventy data", data);
 
   const eventTypes = useMemo(() => {
     if (!data?.results) return [];
@@ -165,7 +166,7 @@ const Page = () => {
                     {formatDate(event.event_date)}
                   </p>
                   <p className="text-white text-sm font-semibold">
-                    {event.event_time ? event.event_time.substring(0, 5) : "—"}
+                    {event.start_time ? event.start_time.substring(0, 5) : "—"}
                   </p>
                 </div>
                 <div className="text-right">

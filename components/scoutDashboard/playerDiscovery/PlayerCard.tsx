@@ -17,32 +17,41 @@ interface PlayerCardProps {
 export const PlayerCard = ({ player, onViewProfile }: PlayerCardProps) => {
   // Local UI state
   const [starred, setStarred] = useState(player.is_shortlisted ?? false);
-  const [shortlistId, setShortlistId] = useState<number | undefined>(player.shortlist_id);
+  const [shortlistId, setShortlistId] = useState<number | undefined>(
+    player.shortlist_id,
+  );
 
   const [addToShortlist] = useAddToShortlistMutation();
   const [removeFromShortlist] = useRemoveFromShortlistMutation();
 
-const handleStarClick = async () => {
-  const wasStarred = starred; 
-  setStarred(!wasStarred); 
+  const handleStarClick = async () => {
+    const wasStarred = starred;
+    setStarred(!wasStarred);
+    console.log({wasStarred})
 
-  try {
-    if (wasStarred && shortlistId) {
-      await removeFromShortlist(shortlistId).unwrap();
-      setShortlistId(undefined);
-      toast.success("Removed from shortlist!");
-    } else if (!wasStarred) {
-      const res = await addToShortlist({ player: player.id }).unwrap();
-      setShortlistId(res.id);
-      toast.success("Added to shortlist!");
+    try {
+      if (wasStarred && shortlistId) {
+        await removeFromShortlist(shortlistId).unwrap();
+        setShortlistId(undefined);
+        toast.success("Removed from shortlist!");
+      } else if (!wasStarred) {
+        const res = await addToShortlist({ player: player.id }).unwrap();
+        setShortlistId(res.id);
+        toast.success("Added to shortlist!");
+      }
+    } catch (err: any) {
+      console.error("Shortlist error:", err);
+      const errorDetail =
+        err?.data?.detail || err?.error || "Something went wrong!";
+      toast.error(errorDetail);
+      setStarred(wasStarred);
     }
-  } catch (err: any) {
-    console.error("Shortlist error:", err);
-    const errorDetail = err?.data?.detail || err?.error || "Something went wrong!";
-    toast.error(errorDetail);
-    setStarred(wasStarred); 
-  }
-};
+  };
+
+  if (!player) return <h1>No player found!</h1>;
+
+  console.log()
+  console.log()
 
   return (
     <div className="bg-[#12143A] border border-[#2DD4BF]/30 rounded-xl p-4 transition-all duration-200 hover:shadow-[0_0_20px_rgba(45,212,191,0.06)] flex flex-col">
@@ -51,25 +60,25 @@ const handleStarClick = async () => {
           <Avatar player={player} size={48} />
           <div className="min-w-0">
             <p className="text-sm font-bold text-white truncate">
-              {player.first_name} {player.last_name}
+              {player.first_name ? player.first_name : "Empty"} {player.last_name ? player.last_name : "Empty"}
             </p>
             <p className="text-[11px] text-[#4A6480] mt-0.5">
-              {player.designation}
+          {player.designation ? player.designation : "No designation"}
             </p>
           </div>
         </div>
-     <button
-  onClick={handleStarClick}
-  className={`flex-shrink-0 transition-transform p-1 rounded ${
-    starred ? "bg-[#2DD4BF]/20" : "bg-transparent"
-  } hover:scale-110`}
->
-  <Star
-    size={15}
-    fill={starred ? "#2DD4BF" : "none"}
-    stroke={starred ? "#2DD4BF" : "#4A6480"}
-  />
-</button>
+        <button
+          onClick={handleStarClick}
+          className={`flex-shrink-0 transition-transform p-1 rounded ${
+            starred ? "bg-[#2DD4BF]/20" : "bg-transparent"
+          } hover:scale-110`}
+        >
+          <Star
+            size={15}
+            fill={starred ? "#2DD4BF" : "none"}
+            stroke={starred ? "#2DD4BF" : "#4A6480"}
+          />
+        </button>
       </div>
 
       <div className="space-y-2 flex-1">

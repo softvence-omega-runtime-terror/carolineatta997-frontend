@@ -1,14 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import {
-  useGetDiscoveryPlayersQuery,
-  useGetPlayerByIdQuery,
-} from "@/redux/features/scout/playerDiscoverApi";
-import {
-  DiscoveryPlayer,
-  PlayerDiscoveryFilters,
-} from "@/types/scout/playerDicoverType";
+import { useGetDiscoveryPlayersQuery } from "@/redux/features/scout/playerDiscoverApi";
+import { PlayerDiscoveryFilters } from "@/types/scout/playerDicoverType";
 
 import { Search, RotateCw } from "lucide-react";
 import { FilterSelect } from "@/components/scoutDashboard/playerDiscovery/FilterSelect";
@@ -82,6 +76,11 @@ export default function PlayerDiscoveryPage() {
 
   const { data, isLoading, isFetching } =
     useGetDiscoveryPlayersQuery(activeFilters);
+
+console.log('player discover data',data)
+
+
+
   const players = data?.results ?? [];
   const hasMore = !!data?.next;
   const loading = isLoading || isFetching;

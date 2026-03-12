@@ -44,12 +44,12 @@ const LoginPage = () => {
     try {
       const response = await login(payload).unwrap();
 
-      dispatch(
+     dispatch(
         setCredentials({
           user: response.user,
-          accessToken: response.tokens.access,
-          refreshToken: response.tokens.refresh,
-        }),
+          accessToken: response.access,
+          refreshToken: response.refresh,
+        })
       );
 
       toast.success("Login successful");
@@ -141,7 +141,12 @@ const LoginPage = () => {
                   aria-label={showPassword ? "Hide password" : "Show password"}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors"
                 >
-                  {showPassword ? <FaRegEye /> : <FaRegEyeSlash />}
+                  {showPassword ? (
+                    <FaRegEye />
+                  ) : (
+
+                    <FaRegEyeSlash />
+                  )}
                 </button>
               </div>
               {errors.password && (
@@ -166,10 +171,7 @@ const LoginPage = () => {
               >
                 Forgot Password?
               </button> */}
-              <Link
-                href="/register"
-                className="text-cyan-400 hover:text-cyan-300 font-medium"
-              >
+              <Link href="/register" className="text-cyan-400 hover:text-cyan-300 font-medium">
                 Back To Register
               </Link>
             </div>
@@ -177,11 +179,10 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 ${
-                isLoading
+              className={`w-full py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 ${isLoading
                   ? "bg-cyan-800 text-white opacity-70 cursor-not-allowed"
                   : "bg-cyan-500 hover:bg-cyan-400 text-white shadow-lg shadow-cyan-500/40"
-              }`}
+                }`}
             >
               <span>{isLoading ? "Signing in..." : "Sign In"}</span>
             </button>

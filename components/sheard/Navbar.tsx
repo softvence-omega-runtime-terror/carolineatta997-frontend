@@ -85,7 +85,7 @@ const Navbar = () => {
             <Image
               src="/images/logo.png"
               alt="NextGen Pros Logo"
-              width={150}
+              width={70}
               height={40}
               className="w-[120px] lg:w-[150px] h-auto opacity-90 hover:opacity-100 transition-opacity"
               priority
@@ -155,12 +155,12 @@ const Navbar = () => {
             ) : (
               <>
                 <Link href="/login">
-                  <Button variant="nav" size="default" className="px-6">
+                  <Button variant="login" className="px-6"  >
                     Log in
                   </Button>
                 </Link>
                 <Link href="/register">
-                  <Button variant="navFilled" size="default" className="px-6">
+                  <Button variant="login" className="px-6">
                     Sign up
                   </Button>
                 </Link>
@@ -184,7 +184,7 @@ const Navbar = () => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden py-6 border-t border-white/10 bg-[#050B14]/95 backdrop-blur-md">
+          <div className="lg:hidden p-7 rounded-xl border-t border-white/10 bg-blur backdrop-blur-md">
             <div className="flex flex-col gap-4">
               {navLinks.map((link) => (
                 <a

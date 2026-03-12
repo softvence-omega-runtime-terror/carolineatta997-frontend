@@ -35,7 +35,7 @@ export default function RootLayout({
       <body className={`${poppins.variable} antialiased`} suppressHydrationWarning>
         <ReduxProviderWrapper>
           {children}
-          <Toaster position="top-right" />
+           <Toaster position="top-right" />
         </ReduxProviderWrapper>
       </body>
     </html>

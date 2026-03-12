@@ -14,8 +14,9 @@ const getInitialState = (): AuthState => {
     return { user: null, accessToken: null, refreshToken: null };
   }
 
+  const savedUser = localStorage.getItem("user");
   return {
-    user: null, // user object is not persisted (too large / sensitive)
+    user: savedUser ? JSON.parse(savedUser) : null,
     accessToken: localStorage.getItem("accessToken") ?? null,
     refreshToken: localStorage.getItem("refreshToken") ?? null,
   };
@@ -37,6 +38,7 @@ const authSlice = createSlice({
       state.accessToken = action.payload.accessToken;
       state.refreshToken = action.payload.refreshToken;
 
+      localStorage.setItem("user", JSON.stringify(action.payload.user));
       localStorage.setItem("accessToken", action.payload.accessToken);
       localStorage.setItem("refreshToken", action.payload.refreshToken);
     },
@@ -46,6 +48,7 @@ const authSlice = createSlice({
       state.accessToken = null;
       state.refreshToken = null;
 
+      localStorage.removeItem("user");
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
     },

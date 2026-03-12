@@ -1,12 +1,14 @@
-import Swal from "sweetalert2";
+import toast from "react-hot-toast";
 
 /** API error shape: { data?: { data?: Record<string, string[]>, detail?: string, message?: string } } or { data?: Record<string, string[]> } */
 export type RegistrationErrorResponse = {
-  data?: {
-    data?: Record<string, string[]>;
-    detail?: string;
-    message?: string;
-  } | Record<string, string[]>;
+  data?:
+    | {
+        data?: Record<string, string[]>;
+        detail?: string;
+        message?: string;
+      }
+    | Record<string, string[]>;
 };
 
 type RegistrationErrorUIOptions = {
@@ -27,7 +29,7 @@ function flattenFieldErrors(fieldErrors: Record<string, string[]>): string {
 function isFieldErrorsObj(obj: unknown): obj is Record<string, string[]> {
   if (!obj || typeof obj !== "object" || Array.isArray(obj)) return false;
   return Object.values(obj).every(
-    (v) => Array.isArray(v) && v.every((m) => typeof m === "string")
+    (v) => Array.isArray(v) && v.every((m) => typeof m === "string"),
   );
 }
 
@@ -35,12 +37,18 @@ function isFieldErrorsObj(obj: unknown): obj is Record<string, string[]> {
  * Flatten field errors into a single string for display.
  * Supports: response.data.data (nested), response.data (direct field errors), or response.data.detail/message.
  */
-export function getRegistrationErrorMessages(err: RegistrationErrorResponse): string {
+export function getRegistrationErrorMessages(
+  err: RegistrationErrorResponse,
+): string {
   const d = err.data;
   if (!d || typeof d !== "object" || Array.isArray(d))
     return "Registration failed. Please try again.";
 
-  const withData = d as { data?: Record<string, unknown>; detail?: string; message?: string };
+  const withData = d as {
+    data?: Record<string, unknown>;
+    detail?: string;
+    message?: string;
+  };
   if (withData.data && isFieldErrorsObj(withData.data)) {
     const msg = flattenFieldErrors(withData.data);
     if (msg) return msg;
@@ -87,38 +95,31 @@ function extractRawErrorText(err: unknown): string {
 }
 
 function isDuplicateEmailError(raw: string): boolean {
-  return /already exists|duplicate key value|accounts_user_email_key/i.test(raw);
+  return /already exists|duplicate key value|accounts_user_email_key/i.test(
+    raw,
+  );
 }
 
 export async function showRegistrationError(
   err: unknown,
-  options: RegistrationErrorUIOptions = {}
+  options: RegistrationErrorUIOptions = {},
 ): Promise<void> {
   const raw = extractRawErrorText(err);
-  const message = getRegistrationErrorMessages(err as RegistrationErrorResponse);
+  const message = getRegistrationErrorMessages(
+    err as RegistrationErrorResponse,
+  );
 
   if (raw && isDuplicateEmailError(raw)) {
-    const result = await Swal.fire({
-      title: "Email Already Registered",
-      text: "This email already exists. Please go to login or use a different email.",
-      icon: "error",
-      showCancelButton: true,
-      confirmButtonText: "Go to login",
-      cancelButtonText: "Close",
-      confirmButtonColor: "#0ea5e9",
-    });
+    toast.error(
+      "Email already registered. Please login or use a different email.",
+      { duration: 5000 },
+    );
 
-    if (result.isConfirmed) {
-      options.onGoToLogin?.();
-    }
+    options.onGoToLogin?.();
     return;
   }
 
-  await Swal.fire({
-    title: "Registration Failed",
-    html: message.replace(/\n/g, "<br />"),
-    icon: "error",
-    confirmButtonText: options.loginHrefLabel ?? "OK",
-    confirmButtonColor: "#0ea5e9",
+  toast.error(message, {
+    duration: 5000,
   });
 }

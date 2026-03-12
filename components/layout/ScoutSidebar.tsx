@@ -9,10 +9,11 @@ import {
   ChevronDown,
   Calendar,
   LayoutDashboard,
-  MessageSquareCheck,
+
   Settings,
   User,
   Building2,
+  MessageSquare,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -78,7 +79,7 @@ const ScoutSideBar: React.FC = () => {
       label: "Scout Directory",
       href: "/scout/scoutDirectory",
     },
-    { icon: MessageSquareCheck, label: "Messaging", href: "/scout/messaging" },
+    { icon: MessageSquare, label: "Messaging", href: "/scout/messaging" },
 
     { icon: Settings, label: " Settings", href: "/scout/scoutSettings" },
   ];

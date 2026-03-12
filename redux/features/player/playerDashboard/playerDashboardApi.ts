@@ -48,6 +48,12 @@ export const playerDashboardApi = baseApi.injectEndpoints({
       providesTags: ["Dashboard"],
     }),
 
+    // GET upcoming events
+    getUpcomingEvents: builder.query<any[], void>({
+      query: () => "/players/event-registrations/upcoming/",
+      providesTags: ["Dashboard"],
+    }),
+
     // GET career statistics
     getCareerStats: builder.query<CareerStats, void>({
       query: () => "/players/career-stats/me/",
@@ -59,4 +65,5 @@ export const playerDashboardApi = baseApi.injectEndpoints({
 export const {
   useGetDashboardStatsQuery,
   useGetCareerStatsQuery,
+  useGetUpcomingEventsQuery,
 } = playerDashboardApi;

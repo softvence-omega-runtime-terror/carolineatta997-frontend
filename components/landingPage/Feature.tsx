@@ -1,56 +1,70 @@
 "use client";
 
+import { useAppSelector } from "@/redux/hooks";
 import { Lock } from "lucide-react";
-import { useSelector } from "react-redux";
-import SectionTitel from "./ReUseable/SectionTitle";
-import HomeButton from "../ui/HomeButton";
 
 const players = [
   {
-    firstName: 'Lionel',
-    lastName: 'Messi',
-    country: 'Argentina',
-    flag: '🇦🇷',
-    position: 'Forward',
-    image: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=150&h=150&fit=crop&crop=face'
+    firstName: "Lionel",
+    lastName: "Messi",
+    country: "Argentina",
+    flag: "🇦🇷",
+    position: "Forward",
+    image:
+      "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=150&h=150&fit=crop&crop=face",
   },
   {
-    firstName: 'Kevin',
-    lastName: 'Bruyne',
-    country: 'Belgium',
-    flag: '🇧🇪',
-    position: 'Midfielder',
-    image: 'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=150&h=150&fit=crop&crop=face'
+    firstName: "Kevin",
+    lastName: "Bruyne",
+    country: "Belgium",
+    flag: "🇧🇪",
+    position: "Midfielder",
+    image:
+      "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=150&h=150&fit=crop&crop=face",
   },
   {
-    firstName: 'Virgil',
-    lastName: 'van',
-    country: 'Netherlands',
-    flag: '🇳🇱',
-    position: 'Defender',
-    image: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=150&h=150&fit=crop&crop=face'
+    firstName: "Virgil",
+    lastName: "van",
+    country: "Netherlands",
+    flag: "🇳🇱",
+    position: "Defender",
+    image:
+      "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=150&h=150&fit=crop&crop=face",
   },
   {
-    firstName: 'Mbappé',
-    lastName: '',
-    country: 'France',
-    flag: '🇫🇷',
-    position: 'Forward',
-    image: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=150&h=150&fit=crop&crop=face'
-  }
+    firstName: "Mbappé",
+    lastName: "",
+    country: "France",
+    flag: "🇫🇷",
+    position: "Forward",
+    image:
+      "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=150&h=150&fit=crop&crop=face",
+  },
 ];
 
 const Feature = () => {
   const theme = useAppSelector((state) => state.theme);
-  const gradient = `linear-gradient(90deg, ${theme.colors.primaryCyan}, ${theme.colors.primaryMagenta})`;
-
   return (
     <section className="py-20 px-4 bg-[#07142b] text-white">
       <div className="container mx-auto">
-        <SectionTitel
-          title="FEATURED PLAYERS"
-          subtitle="Browse top football talent and explore detailed player profiles."
-        />
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h2
+            className="text-4xl md:text-5xl lg:text-6xl  font-bold mb-2 inline-block"
+            style={{
+              backgroundImage: `linear-gradient(90deg, ${theme.colors.primaryCyan}, ${theme.colors.primaryMagenta})`,
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              color: "transparent",
+            }}
+          >
+            FEATURED PLAYERS
+          </h2>
+          <p className="text-muted-foreground text-sm md:text-base">
+            Browse top football talent and explore detailed player profiles.
+          </p>
+        </div>
 
         {/* Players Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
@@ -64,7 +78,7 @@ const Feature = () => {
                 <h3
                   className="font-display text-lg font-semibold mb-2"
                   style={{
-                    backgroundImage: gradient,
+                    backgroundImage: `linear-gradient(90deg, ${theme.colors.primaryCyan}, ${theme.colors.primaryMagenta})`,
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                     backgroundClip: "text",
@@ -76,9 +90,13 @@ const Feature = () => {
                 </h3>
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-lg">{player.flag}</span>
-                  <span className="text-muted-foreground text-sm">{player.country}</span>
+                  <span className="text-muted-foreground text-sm">
+                    {player.country}
+                  </span>
                 </div>
-                <p className="text-purple-400 text-sm">Position: {player.position}</p>
+                <p className="text-purple-400 text-sm">
+                  Position: {player.position}
+                </p>
               </div>
 
               {/* Player Image */}
@@ -93,15 +111,12 @@ const Feature = () => {
           ))}
         </div>
 
-        <div className="flex justify-center mt-10">
-          <HomeButton
-            text={`View All Clubs`}
-            icon={<Lock size={18} />}
-            variant="outline"
-            theme={theme}
-          />
+        {/* View All Button */}
+          <div className="flex justify-center mt-10">
+          <button className="px-8 py-2 border border-purple-700 rounded-full text-foreground hover:bg-purple/10 transition-colors flex items-center gap-2 text-white ">
+            View All Clubs <Lock size={14} />
+          </button>
         </div>
-      
       </div>
     </section>
   );

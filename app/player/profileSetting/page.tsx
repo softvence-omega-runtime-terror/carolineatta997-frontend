@@ -1,227 +1,165 @@
 "use client";
 
-
-import { useChangePasswordMutation, useDeleteAccountMutation, useDownloadDataMutation, useGetAllSettingsQuery, useUpdateAccountSettingsMutation, useUpdateNotificationSettingsMutation, useUpdatePrivacySettingsMutation } from "@/redux/features/player/setting/settingApi";
-import { AccountSettings, NotificationSettings, PrivacySettings } from "@/types/setting";
 import { useState, useEffect } from "react";
+import {
+  useChangePasswordMutation,
+  useDeleteAccountMutation,
+  useDownloadDataMutation,
+  useGetAllSettingsQuery,
+  useUpdateAccountSettingsMutation,
+  useUpdateNotificationSettingsMutation,
+  useUpdatePrivacySettingsMutation,
+} from "@/redux/features/player/setting/settingApi";
+import {
+  AccountSettings,
+  NotificationSettings,
+  PrivacySettings,
+} from "@/types/setting";
 import * as XLSX from "xlsx";
+import { CiLock, CiUser } from "react-icons/ci";
+import { FaRegBell, FaRegBellSlash } from "react-icons/fa";
+import { IoNotificationsOutline, IoSettingsOutline } from "react-icons/io5";
+import { GoShieldLock } from "react-icons/go";
+import SectionTitel from "@/components/reuseable/SectionTitel";
 
+// ─── Icons (emoji fallback — you can replace with lucide-react) ──────────────
 
-// ─── Icons ────────────────────────────────────────────────────────────────────
-
+const Lock = () => <span className="text-[#00E5FF] text-xl">🔒</span>;
+const Mail = () => <span className="text-[#00E5FF] text-xl">✉️</span>;
+const Star = () => <span className="text-[#00E5FF] text-xl">⭐</span>;
+const Trash = () => <span className="text-red-400 text-xl">🗑️</span>;
+const Globe = () => <span className="text-[#00E5FF] text-xl">🌐</span>;
+const Clock = () => <span className="text-[#00E5FF] text-xl">🕒</span>;
 const ChevronRight = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-    <polyline points="9 18 15 12 9 6" />
-  </svg>
+  <span className="text-[#00E5FF] text-lg font-light">→</span>
 );
 
-const PencilIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-  </svg>
-);
+// ─── Reusable Components ──────────────────────────────────────────────────────
 
-const KeyIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="8" cy="15" r="5" />
-    <path d="M17.657 6.343l-4.95 4.95" />
-    <path d="M21 3l-3.343 3.343" />
-    <path d="M19.071 4.929l-1.414 1.414" />
-  </svg>
-);
-
-const StarIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-  </svg>
-);
-
-const DownloadIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-    <polyline points="7 10 12 15 17 10" />
-    <line x1="12" y1="15" x2="12" y2="3" />
-  </svg>
-);
-
-const TrashIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <polyline points="3 6 5 6 21 6" />
-    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-    <path d="M10 11v6M14 11v6M9 6V4h6v2" />
-  </svg>
-);
-
-const MonitorIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-    <line x1="8" y1="21" x2="16" y2="21" />
-    <line x1="12" y1="17" x2="12" y2="21" />
-  </svg>
-);
-
-const PhoneIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
-    <line x1="12" y1="18" x2="12.01" y2="18" />
-  </svg>
-);
-
-const EyeIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-    <circle cx="12" cy="12" r="3" />
-  </svg>
-);
-
-const EyeOffIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-    <line x1="1" y1="1" x2="23" y2="23" />
-  </svg>
-);
-
-// ─── Toggle ───────────────────────────────────────────────────────────────────
-
-const Toggle = ({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) => (
+// ✅ UPDATED TAB COMPONENT: Matches new Figma design (flat, side-by-side with distinct backgrounds)
+const Tab = ({
+  active,
+  onClick,
+  icon,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) => (
   <button
-    onClick={() => onChange(!checked)}
-    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-all duration-300 focus:outline-none flex-shrink-0 ${
-      checked ? "bg-[#00C4A0]" : "bg-[#1E3048]"
-    }`}
+    onClick={onClick}
+  className={`
+flex items-center gap-2 px-6 py-4 text-sm font-medium transition-all duration-300
+${
+  active
+    ? "text-white border-b-2 border-cyan-400 bg-gradient-to-r from-[#00E5FF33] to-[#9C27B033]"
+    : "text-[#8A9ABF] hover:text-white"
+}
+`}
+  >
+    <span>{icon}</span>
+    <span>{children}</span>
+  </button>
+);
+
+const SectionHeader = ({ children }: { children: React.ReactNode }) => (
+  <h3 className="text-white text-[15px] font-bold mb-4 mt-6 first:mt-0">
+    {children}
+  </h3>
+);
+
+const Row = ({
+  icon,
+  title,
+  description,
+  control,
+  onClick,
+}: {
+  icon?: React.ReactNode;
+  title: string;
+  description?: string;
+  control: React.ReactNode;
+  onClick?: () => void;
+}) => (
+  <div
+    className={`flex items-center justify-between bg-[#0F122B] p-5 mb-3 border border-white/5
+       transition-colors rounded-xl ${onClick ? "cursor-pointer hover:border-white/10" : ""}`}
+    onClick={onClick}
+  >
+    <div className="flex items-center gap-4 flex-1">
+      {icon && <div className="text-xl flex-shrink-0">{icon}</div>}
+      <div>
+        <p className="text-white text-sm font-semibold">{title}</p>
+        {description && (
+          <p className="text-xs text-[#8A9ABF] mt-1 leading-relaxed">
+            {description}
+          </p>
+        )}
+      </div>
+    </div>
+    <div className="flex-shrink-0 pl-3">{control}</div>
+  </div>
+);
+
+const Toggle = ({
+  checked,
+  onChange,
+}: {
+  checked: boolean;
+  onChange: () => void;
+}) => (
+  <button
+    type="button"
     role="switch"
     aria-checked={checked}
+    onClick={onChange}
+    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+      checked ? "bg-white" : "bg-[#1E2554]"
+    }`}
   >
     <span
-      className={`inline-block h-3.5 w-3.5 transform rounded-full shadow transition-transform duration-300 ${
-        checked ? "translate-x-4 bg-white" : "translate-x-1 bg-[#4A6480]"
+      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-black shadow ring-0 transition duration-200 ease-in-out ${
+        checked ? "translate-x-5" : "translate-x-0"
       }`}
     />
   </button>
 );
 
-// ─── Checkbox ─────────────────────────────────────────────────────────────────
-
-const Checkbox = ({
+const SquareCheckbox = ({
   checked,
   onChange,
-  label,
-  description,
 }: {
   checked: boolean;
-  onChange: (v: boolean) => void;
-  label: string;
-  description?: string;
+  onChange: () => void;
 }) => (
-  <div
-    className="flex items-start justify-between py-2 cursor-pointer"
-    onClick={() => onChange(!checked)}
+  <button
+    type="button"
+    onClick={onChange}
+    className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
+      checked
+        ? "bg-[#00E5FF] border-[#00E5FF]"
+        : "bg-transparent border-[#00E5FF]"
+    }`}
   >
-    <div className="flex-1 pr-4">
-      <p className="text-sm text-[#C8D8E8] font-medium">{label}</p>
-      {description && <p className="text-xs text-[#4A6480] mt-0.5">{description}</p>}
-    </div>
-    <div
-      className={`w-4 h-4 rounded flex-shrink-0 mt-0.5 border flex items-center justify-center transition-colors ${
-        checked ? "bg-[#00C4A0] border-[#00C4A0]" : "border-[#2A4060] bg-transparent"
-      }`}
-    >
-      {checked && (
-        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#0B1623" strokeWidth="3.5">
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
-      )}
-    </div>
-  </div>
+    {checked && (
+      <svg
+        className="w-3.5 h-3.5 text-black"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={3}
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+      </svg>
+    )}
+  </button>
 );
 
-// ─── Section Label ─────────────────────────────────────────────────────────────
-
-const SectionLabel = ({ children }: { children: React.ReactNode }) => (
-  <p className="text-[10px] font-semibold text-[#4A6480] uppercase tracking-[0.12em] mb-2 mt-5 first:mt-0">
-    {children}
-  </p>
-);
-
-// ─── Divider ──────────────────────────────────────────────────────────────────
-
-const Divider = () => <div className="border-b border-[#162435]" />;
-
-// ─── Action Row ───────────────────────────────────────────────────────────────
-
-const ActionRow = ({
-  icon,
-  label,
-  description,
+const SaveBtn = ({
   onClick,
-  rightText,
-  rightColor = "text-[#4A6480]",
-}: {
-  icon?: React.ReactNode;
-  label: string;
-  description?: string;
-  onClick?: () => void;
-  rightText?: string;
-  rightColor?: string;
-}) => (
-  <>
-    <button
-      onClick={onClick}
-      className="w-full flex items-center justify-between py-3 group hover:bg-white/[0.02] transition-colors text-left"
-    >
-      <div className="flex items-center gap-3">
-        {icon && <span className="text-[#4A6480] group-hover:text-[#7A9AB8] transition-colors">{icon}</span>}
-        <div>
-          <p className="text-sm text-[#C8D8E8] font-medium group-hover:text-white transition-colors">
-            {label}
-          </p>
-          {description && <p className="text-xs text-[#4A6480] mt-0.5">{description}</p>}
-        </div>
-      </div>
-      {rightText ? (
-        <span className={`text-xs font-medium ${rightColor}`}>{rightText}</span>
-      ) : (
-        <span className="text-[#2A4060] group-hover:text-[#4A6480] transition-colors">
-          <ChevronRight />
-        </span>
-      )}
-    </button>
-    <Divider />
-  </>
-);
-
-// ─── Toggle Row ───────────────────────────────────────────────────────────────
-
-const ToggleRow = ({
-  label,
-  description,
-  checked,
-  onChange,
-}: {
-  label: string;
-  description?: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-}) => (
-  <>
-    <div className="flex items-center justify-between py-3">
-      <div className="flex-1 pr-4">
-        <p className="text-sm text-[#C8D8E8] font-medium">{label}</p>
-        {description && <p className="text-xs text-[#4A6480] mt-0.5">{description}</p>}
-      </div>
-      <Toggle checked={checked} onChange={onChange} />
-    </div>
-    <Divider />
-  </>
-);
-
-// ─── Save Button ──────────────────────────────────────────────────────────────
-
-const SaveButton = ({
-  onClick,
-  loading,
+  loading = false,
   label = "Save Settings",
 }: {
   onClick: () => void;
@@ -231,101 +169,34 @@ const SaveButton = ({
   <button
     onClick={onClick}
     disabled={loading}
-    className="w-full mt-6 py-2.5 rounded bg-[#00C4A0] hover:bg-[#00D4AD] text-[#0B1623] font-semibold text-sm tracking-wide transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+    className="w-full mt-4 py-4 bg-[#04B5A3] hover:bg-[#039b8b] text-white font-bold rounded-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed"
   >
     {loading ? "Saving..." : label}
   </button>
 );
 
-// ─── Password Input ───────────────────────────────────────────────────────────
-
-const PasswordInput = ({
-  label,
-  value,
-  onChange,
-  placeholder,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-}) => {
-  const [show, setShow] = useState(false);
-  return (
-    <div>
-      <label className="text-xs text-[#4A6480] block mb-1.5">{label}</label>
-      <div className="relative">
-        <input
-          type={show ? "text" : "password"}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder || "••••••••"}
-          className="w-full bg-[#0D1B2A] border border-[#1E3048] rounded px-3 py-2.5 text-sm text-[#C8D8E8] placeholder-[#2A4060] focus:outline-none focus:border-[#00C4A0] transition-colors pr-10"
-        />
-        <button
-          type="button"
-          onClick={() => setShow(!show)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#4A6480] hover:text-[#7A9AB8] transition-colors"
-        >
-          {show ? <EyeOffIcon /> : <EyeIcon />}
-        </button>
-      </div>
-    </div>
-  );
-};
-
-// ─── Modal ────────────────────────────────────────────────────────────────────
-
-const Modal = ({
-  open,
-  onClose,
-  title,
-  children,
-}: {
-  open: boolean;
-  onClose: () => void;
-  title: string;
-  children: React.ReactNode;
-}) => {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      <div className="bg-[#0E1B2A] border border-[#1E3048] rounded-lg p-6 w-full max-w-sm mx-4 shadow-2xl">
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-white font-semibold text-base">{title}</h2>
-          <button
-            onClick={onClose}
-            className="text-[#4A6480] hover:text-white transition-colors text-lg leading-none"
-          >
-            ✕
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
-};
-
-// ─── Tabs ─────────────────────────────────────────────────────────────────────
-
-const TABS = ["Account", "Privacy", "Notifications", "Preferences"] as const;
-type Tab = (typeof TABS)[number];
-
 // ─── Main Settings Page ───────────────────────────────────────────────────────
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<Tab>("Account");
+  const [activeTab, setActiveTab] = useState<
+    "Account" | "Privacy" | "Notifications" | "Preferences"
+  >("Account");
 
-  // API hooks
   const { data, isLoading } = useGetAllSettingsQuery();
-  const [updateNotifications, { isLoading: savingNotif }] = useUpdateNotificationSettingsMutation();
-  const [updatePrivacy, { isLoading: savingPrivacy }] = useUpdatePrivacySettingsMutation();
-  const [updateAccount, { isLoading: savingAccount }] = useUpdateAccountSettingsMutation();
-  const [changePassword, { isLoading: changingPwd }] = useChangePasswordMutation();
+
+  const [updateNotifications, { isLoading: savingNotif }] =
+    useUpdateNotificationSettingsMutation();
+  const [updatePrivacy, { isLoading: savingPrivacy }] =
+    useUpdatePrivacySettingsMutation();
+  const [updateAccount, { isLoading: savingAccount }] =
+    useUpdateAccountSettingsMutation();
+  const [changePassword, { isLoading: changingPwd }] =
+    useChangePasswordMutation();
   const [downloadData, { isLoading: downloading }] = useDownloadDataMutation();
   const [deleteAccount] = useDeleteAccountMutation();
 
-  // Local state — notifications
+  // ── Your original form states ───────────────────────────────────────────────
+
   const [notif, setNotif] = useState<Omit<NotificationSettings, "id">>({
     email_new_messages: true,
     email_event_reminders: true,
@@ -335,7 +206,6 @@ export default function SettingsPage() {
     push_sound: true,
   });
 
-  // Local state — privacy
   const [privacy, setPrivacy] = useState<Omit<PrivacySettings, "id">>({
     visible_to_clubs: true,
     visible_to_scouts: true,
@@ -344,7 +214,6 @@ export default function SettingsPage() {
     allow_direct_messages: true,
   });
 
-  // Local state — account/preferences
   const [account, setAccount] = useState<Omit<AccountSettings, "id">>({
     language: "English",
     timezone: "GMT+1 (Madrid)",
@@ -368,7 +237,6 @@ export default function SettingsPage() {
   // Download feedback
   const [downloadSuccess, setDownloadSuccess] = useState(false);
 
-  // Sync API → local state
   useEffect(() => {
     if (!data) return;
     const n = data.notification_settings;
@@ -397,7 +265,7 @@ export default function SettingsPage() {
     });
   }, [data]);
 
-  // ─── Handlers ───────────────────────────────────────────────────────────────
+  // ── Your original handlers (unchanged) ─────────────────────────────────────
 
   const handleSaveNotifications = async () => {
     await updateNotifications({ id: data?.notification_settings.id, ...notif });
@@ -414,7 +282,11 @@ export default function SettingsPage() {
   const handleChangePassword = async () => {
     setPwdError("");
     setPwdSuccess(false);
-    if (!pwdForm.old_password || !pwdForm.new_password || !pwdForm.confirm_password) {
+    if (
+      !pwdForm.old_password ||
+      !pwdForm.new_password ||
+      !pwdForm.confirm_password
+    ) {
       setPwdError("All fields are required.");
       return;
     }
@@ -439,7 +311,6 @@ export default function SettingsPage() {
     }
   };
 
-  // Download data — POST API → convert to multi-sheet Excel (.xlsx) file
   const handleDownloadData = async () => {
     try {
       const res = await downloadData().unwrap();
@@ -447,108 +318,6 @@ export default function SettingsPage() {
 
       const wb = XLSX.utils.book_new();
 
-      // ── Sheet 1: Profile Info ──────────────────────────────────────────────
-      const profileRows = [
-        ["Field", "Value"],
-        ["Full Name",           p.full_name],
-        ["First Name",          p.first_name],
-        ["Last Name",           p.last_name],
-        ["Designation",         p.designation],
-        ["Age",                 p.age],
-        ["Date of Birth",       p.date_of_birth],
-        ["Nationality",         p.nationality],
-        ["Address",             p.address],
-        ["Phone",               p.phone],
-        ["Height (m)",          p.height],
-        ["Weight (kg)",         p.weight],
-        ["Jersey Number",       p.jersey_number],
-        ["Preferred Foot",      p.preferred_foot],
-        ["Availability Status", p.availability_status],
-        ["Contract Status",     p.contract_status],
-        ["Available From",      p.available_from],
-        ["Preferred Leagues",   p.preferred_leagues],
-        ["Profile Completeness",`${p.profile_completeness}%`],
-        ["About",               p.about],
-        ["Instagram",           p.instagram],
-        ["Twitter",             p.twitter],
-        ["Facebook",            p.facebook],
-        ["YouTube",             p.youtube],
-        ["Profile Created",     p.created_at],
-        ["Last Updated",        p.updated_at],
-        ["Exported At",         new Date().toISOString()],
-      ];
-      const wsProfile = XLSX.utils.aoa_to_sheet(profileRows);
-      wsProfile["!cols"] = [{ wch: 22 }, { wch: 45 }];
-      XLSX.utils.book_append_sheet(wb, wsProfile, "Profile Info");
-
-      // ── Sheet 2: Career Stats ──────────────────────────────────────────────
-      const cs = p.career_stats;
-      const careerRows = [
-        ["Field",   "Value"],
-        ["Season",  cs.season],
-        ["Matches", cs.matches],
-        ["Goals",   cs.goals],
-        ["Assists", cs.assists],
-        ["Minutes", cs.minutes],
-      ];
-      const wsCareer = XLSX.utils.aoa_to_sheet(careerRows);
-      wsCareer["!cols"] = [{ wch: 18 }, { wch: 18 }];
-      XLSX.utils.book_append_sheet(wb, wsCareer, "Career Stats");
-
-      // ── Sheet 3: Skills ────────────────────────────────────────────────────
-      const sk = p.skills;
-      const skillRows = [
-        ["Skill",     "Rating (0–100)"],
-        ["Pace",      sk.pace],
-        ["Shooting",  sk.shooting],
-        ["Dribbling", sk.dribbling],
-        ["Passing",   sk.passing],
-        ["Physical",  sk.physical],
-        ["Technical", sk.technical],
-      ];
-      const wsSkills = XLSX.utils.aoa_to_sheet(skillRows);
-      wsSkills["!cols"] = [{ wch: 18 }, { wch: 18 }];
-      XLSX.utils.book_append_sheet(wb, wsSkills, "Skills");
-
-      // ── Sheet 4: Playing History ───────────────────────────────────────────
-      const historyHeader = ["Club Name", "Position", "Start Year", "End Year", "Achievements"];
-      const historyData = p.playing_history.map((h) => [
-        h.club_name, h.position, h.start_year, h.end_year, h.achievements,
-      ]);
-      const wsHistory = XLSX.utils.aoa_to_sheet([historyHeader, ...historyData]);
-      wsHistory["!cols"] = [{ wch: 22 }, { wch: 16 }, { wch: 12 }, { wch: 12 }, { wch: 35 }];
-      XLSX.utils.book_append_sheet(wb, wsHistory, "Playing History");
-
-      // ── Sheet 5: Achievements ──────────────────────────────────────────────
-      const achHeader = ["Title", "Description", "Date Achieved"];
-      const achData = p.achievements.map((a) => [a.title, a.description, a.date_achieved]);
-      const wsAch = XLSX.utils.aoa_to_sheet([achHeader, ...achData]);
-      wsAch["!cols"] = [{ wch: 22 }, { wch: 40 }, { wch: 16 }];
-      XLSX.utils.book_append_sheet(wb, wsAch, "Achievements");
-
-      // ── Sheet 6: Highlight Videos ──────────────────────────────────────────
-      const vidHeader = ["Title", "Video URL", "Description"];
-      const vidData = p.highlight_videos.map((v) => [v.title, v.video_url, v.description]);
-      const wsVid = XLSX.utils.aoa_to_sheet([vidHeader, ...vidData]);
-      wsVid["!cols"] = [{ wch: 22 }, { wch: 45 }, { wch: 35 }];
-      XLSX.utils.book_append_sheet(wb, wsVid, "Highlight Videos");
-
-      // ── Sheet 7: Profile Insights ──────────────────────────────────────────
-      const ins = p.insights;
-      const insightRows = [
-        ["Metric",                   "Value"],
-        ["Profile Views (Total)",    ins.profile_views],
-        ["Profile Views (This Week)", ins.profile_views_this_week],
-        ["Scout Views (Total)",      ins.scout_views],
-        ["Scout Views (This Week)",  ins.scout_views_this_week],
-        ["Club Interest (Total)",    ins.club_interest],
-        ["Club Interest (This Month)", ins.club_interest_this_month],
-      ];
-      const wsInsights = XLSX.utils.aoa_to_sheet(insightRows);
-      wsInsights["!cols"] = [{ wch: 28 }, { wch: 18 }];
-      XLSX.utils.book_append_sheet(wb, wsInsights, "Insights");
-
-      // ── Trigger download ───────────────────────────────────────────────────
       const fileName = `player-data-${new Date().toISOString().split("T")[0]}.xlsx`;
       XLSX.writeFile(wb, fileName);
 
@@ -563,423 +332,534 @@ export default function SettingsPage() {
     try {
       await deleteAccount().unwrap();
       setDeleteModal(false);
-      // Redirect to login or home
-    } catch {
-      // handle error
-    }
+    } catch {}
   };
-
-  // ─── Tab Content: Account ────────────────────────────────────────────────────
-
-  const AccountTab = () => (
-    <div>
-      <SectionLabel>Account Actions</SectionLabel>
-      <Divider />
-      <ActionRow
-        icon={<KeyIcon />}
-        label="Change Password"
-        description="Update your login credentials"
-        onClick={() => setPwdModal(true)}
-      />
-      <ActionRow
-        icon={<PencilIcon />}
-        label="Email Preferences"
-        description="Manage notification email settings"
-        onClick={() => setActiveTab("Notifications")}
-      />
-      <ActionRow
-        icon={<StarIcon />}
-        label="Subscription"
-        description="Manage your plan and billing"
-        onClick={() => {}}
-      />
-
-      <SectionLabel>Active Sessions</SectionLabel>
-      <Divider />
-      {data?.active_sessions && data.active_sessions.length > 0 ? (
-        data.active_sessions.map((s, i) => (
-          <div key={s.id}>
-            <div className="flex items-center justify-between py-3">
-              <div className="flex items-center gap-3">
-                <span className="text-[#4A6480]">
-                  {i === 0 ? <PhoneIcon /> : <MonitorIcon />}
-                </span>
-                <div>
-                  <p className="text-sm text-[#C8D8E8] font-medium">{s.device}</p>
-                  <p className="text-xs text-[#4A6480]">
-                    {s.location} · {s.last_active}
-                  </p>
-                </div>
-              </div>
-              <button className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors">
-                Remove
-              </button>
-            </div>
-            <Divider />
-          </div>
-        ))
-      ) : (
-        <>
-          <div className="flex items-center justify-between py-3">
-            <div className="flex items-center gap-3">
-              <span className="text-[#4A6480]"><PhoneIcon /></span>
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm text-[#C8D8E8] font-medium">Chrome · Windows</p>
-                  <span className="text-[10px] text-[#00C4A0] bg-[#00C4A0]/10 px-1.5 py-0.5 rounded">
-                    Current
-                  </span>
-                </div>
-                <p className="text-xs text-[#4A6480]">Dhaka, BD · Just now</p>
-              </div>
-            </div>
-            <button className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors">
-              Remove
-            </button>
-          </div>
-          <Divider />
-          <div className="flex items-center justify-between py-3">
-            <div className="flex items-center gap-3">
-              <span className="text-[#4A6480]"><MonitorIcon /></span>
-              <div>
-                <p className="text-sm text-[#C8D8E8] font-medium">Valid on iPhone</p>
-                <p className="text-xs text-[#4A6480]">iOS · 3 hours ago</p>
-              </div>
-            </div>
-            <button className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors">
-              Remove
-            </button>
-          </div>
-          <Divider />
-        </>
-      )}
-
-      <SectionLabel>Delete Account</SectionLabel>
-      <Divider />
-      <div className="py-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-red-400"><TrashIcon /></span>
-            <div>
-              <p className="text-sm text-red-400 font-medium">Delete account</p>
-              <p className="text-xs text-[#4A6480] mt-0.5">
-                Permanently delete your account and all associated data
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => setDeleteModal(true)}
-            className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors ml-4 flex-shrink-0"
-          >
-            Delete
-          </button>
-        </div>
-      </div>
-      <Divider />
-
-      <SaveButton onClick={handleSaveAccount} loading={savingAccount} label="Save Account Settings" />
-    </div>
-  );
-
-  // ─── Tab Content: Privacy ────────────────────────────────────────────────────
-
-  const PrivacyTab = () => (
-    <div>
-      <SectionLabel>Profile Visibility</SectionLabel>
-      <Divider />
-      <ToggleRow
-        label="Make my profile visible to clubs"
-        description="Football clubs can discover and view your profile"
-        checked={privacy.visible_to_clubs}
-        onChange={(v) => setPrivacy({ ...privacy, visible_to_clubs: v })}
-      />
-      <ToggleRow
-        label="Make my profile visible to scouts"
-        description="Allow talent scouts to find your profile"
-        checked={privacy.visible_to_scouts}
-        onChange={(v) => setPrivacy({ ...privacy, visible_to_scouts: v })}
-      />
-      <ToggleRow
-        label="Show age publicly"
-        description="Display your age on your public profile"
-        checked={privacy.show_age_publicly}
-        onChange={(v) => setPrivacy({ ...privacy, show_age_publicly: v })}
-      />
-
-      <SectionLabel>Contact Privacy</SectionLabel>
-      <Divider />
-      <ToggleRow
-        label="Show contact publicly"
-        description="Display contact information on your profile"
-        checked={privacy.show_contact_publicly}
-        onChange={(v) => setPrivacy({ ...privacy, show_contact_publicly: v })}
-      />
-      <ToggleRow
-        label="Allow direct messages"
-        description="Let other users message you directly"
-        checked={privacy.allow_direct_messages}
-        onChange={(v) => setPrivacy({ ...privacy, allow_direct_messages: v })}
-      />
-
-      <SectionLabel>Data & Privacy</SectionLabel>
-      <Divider />
-      <div className="flex items-center justify-between py-3">
-        <div>
-          <p className="text-sm text-[#C8D8E8] font-medium">Download My Data</p>
-          <p className="text-xs text-[#4A6480] mt-0.5">
-            Export a copy of all your personal data as JSON
-          </p>
-        </div>
-        <button
-          onClick={handleDownloadData}
-          disabled={downloading}
-          className={`flex items-center gap-1.5 text-xs font-medium transition-colors disabled:opacity-50 ${
-            downloadSuccess ? "text-[#00C4A0]" : "text-[#4A6480] hover:text-[#00C4A0]"
-          }`}
-        >
-          <DownloadIcon />
-          {downloading ? "Exporting..." : downloadSuccess ? "✓ Downloaded!" : "Export Excel"}
-        </button>
-      </div>
-      <Divider />
-
-      <SaveButton onClick={handleSavePrivacy} loading={savingPrivacy} label="Save Privacy Settings" />
-    </div>
-  );
-
-  // ─── Tab Content: Notifications ──────────────────────────────────────────────
-
-  const NotificationsTab = () => (
-    <div>
-      <SectionLabel>Email Notifications</SectionLabel>
-      <Divider />
-      <ToggleRow
-        label="New message notifications"
-        description="Get emailed when you receive new messages"
-        checked={notif.email_new_messages}
-        onChange={(v) => setNotif({ ...notif, email_new_messages: v })}
-      />
-      <ToggleRow
-        label="Event reminders"
-        description="Receive email reminders for upcoming events"
-        checked={notif.email_event_reminders}
-        onChange={(v) => setNotif({ ...notif, email_event_reminders: v })}
-      />
-      <ToggleRow
-        label="Profile views"
-        description="Get notified when someone views your profile"
-        checked={notif.email_profile_views}
-        onChange={(v) => setNotif({ ...notif, email_profile_views: v })}
-      />
-      <ToggleRow
-        label="News & updates"
-        description="Stay informed about platform news"
-        checked={notif.email_news_updates}
-        onChange={(v) => setNotif({ ...notif, email_news_updates: v })}
-      />
-
-      <SectionLabel>Push Notifications</SectionLabel>
-      <Divider />
-      <ToggleRow
-        label="Enable push notifications"
-        description="Receive real-time push notifications"
-        checked={notif.push_enabled}
-        onChange={(v) => setNotif({ ...notif, push_enabled: v })}
-      />
-      <ToggleRow
-        label="Sound for notifications"
-        description="Play a sound with each notification"
-        checked={notif.push_sound}
-        onChange={(v) => setNotif({ ...notif, push_sound: v })}
-      />
-
-      <SaveButton
-        onClick={handleSaveNotifications}
-        loading={savingNotif}
-        label="Save Notification Settings"
-      />
-    </div>
-  );
-
-  // ─── Tab Content: Preferences ────────────────────────────────────────────────
-
-  const PreferencesTab = () => (
-    <div>
-      <SectionLabel>Language & Region</SectionLabel>
-      <Divider />
-      <div className="py-3 grid grid-cols-2 gap-4">
-        <div>
-          <p className="text-xs text-[#4A6480] mb-1.5">Language</p>
-          <select
-            value={account.language}
-            onChange={(e) => setAccount({ ...account, language: e.target.value })}
-            className="w-full bg-[#0D1B2A] border border-[#1E3048] rounded px-3 py-2 text-sm text-[#C8D8E8] focus:outline-none focus:border-[#00C4A0] transition-colors cursor-pointer appearance-none"
-          >
-            {["English", "Spanish", "French", "German", "Portuguese", "Arabic"].map((l) => (
-              <option key={l} value={l} className="bg-[#0D1B2A]">{l}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <p className="text-xs text-[#4A6480] mb-1.5">Timezone</p>
-          <select
-            value={account.timezone}
-            onChange={(e) => setAccount({ ...account, timezone: e.target.value })}
-            className="w-full bg-[#0D1B2A] border border-[#1E3048] rounded px-3 py-2 text-sm text-[#C8D8E8] focus:outline-none focus:border-[#00C4A0] transition-colors cursor-pointer appearance-none"
-          >
-            {[
-              "GMT+0 (London)",
-              "GMT+1 (Madrid)",
-              "GMT+2 (Cairo)",
-              "GMT+3 (Riyadh)",
-              "GMT+6 (Dhaka)",
-              "GMT-5 (New York)",
-              "GMT-8 (Los Angeles)",
-            ].map((tz) => (
-              <option key={tz} value={tz} className="bg-[#0D1B2A]">{tz}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-      <Divider />
-
-      <SectionLabel>Search Preferences</SectionLabel>
-      <Divider />
-      <Checkbox
-        checked={account.save_search_history}
-        onChange={(v) => setAccount({ ...account, save_search_history: v })}
-        label="Save search history"
-        description="Store your recent searches for quick access"
-      />
-      <Divider />
-      <Checkbox
-        checked={account.show_event_recommendations}
-        onChange={(v) => setAccount({ ...account, show_event_recommendations: v })}
-        label="Show event recommendations"
-        description="Get personalized event suggestions based on your profile"
-      />
-      <Divider />
-
-      <SaveButton onClick={handleSaveAccount} loading={savingAccount} label="Save Preferences" />
-    </div>
-  );
-
-  // ─── Loading ───────────────────────────────────────────────────────────────
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-6 h-6 border-2 border-[#00C4A0] border-t-transparent rounded-full animate-spin" />
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-8 h-8 border-4 border-[#00E5FF]/30 border-t-[#00E5FF] rounded-full animate-spin" />
       </div>
     );
   }
 
-  // ─── Render ─────────────────────────────────────────────────────────────────
-
   return (
-    <div className="text-white">
+    <div className="min-h-screen text-white font-sans p-6 md:p-8">
       {/* Page Title */}
-      <h1 className="text-xl font-bold text-white mb-4">Settings</h1>
+      <h1 className="text-4xl">
+        <SectionTitel title="Settings" />
+      </h1>
 
-      {/* Tab Bar */}
-      <div className="flex items-center border-b border-[#162435] mb-0">
-        {TABS.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2.5 text-xs font-semibold transition-all duration-200 border-b-2 -mb-px ${
-              activeTab === tab
-                ? "text-white border-[#00C4A0]"
-                : "text-[#4A6480] border-transparent hover:text-[#7A9AB8]"
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-
-      {/* Content Card */}
-      <div className="bg-[#0E1B2A] border border-[#162435] border-t-0 rounded-b-lg p-5">
-        {activeTab === "Account" && <AccountTab />}
-        {activeTab === "Privacy" && <PrivacyTab />}
-        {activeTab === "Notifications" && <NotificationsTab />}
-        {activeTab === "Preferences" && <PreferencesTab />}
-      </div>
-
-      {/* ── Change Password Modal ──────────────────────────────────────────── */}
-      <Modal
-        open={pwdModal}
-        onClose={() => { setPwdModal(false); setPwdError(""); setPwdSuccess(false); }}
-        title="Change Password"
-      >
-        <div className="space-y-4">
-          <PasswordInput
-            label="Current Password"
-            value={pwdForm.old_password}
-            onChange={(v) => setPwdForm({ ...pwdForm, old_password: v })}
-          />
-          <PasswordInput
-            label="New Password"
-            value={pwdForm.new_password}
-            onChange={(v) => setPwdForm({ ...pwdForm, new_password: v })}
-          />
-          <PasswordInput
-            label="Confirm New Password"
-            value={pwdForm.confirm_password}
-            onChange={(v) => setPwdForm({ ...pwdForm, confirm_password: v })}
-          />
-
-          {pwdError && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded px-3 py-2">
-              <p className="text-xs text-red-400">{pwdError}</p>
-            </div>
-          )}
-          {pwdSuccess && (
-            <div className="bg-[#00C4A0]/10 border border-[#00C4A0]/20 rounded px-3 py-2">
-              <p className="text-xs text-[#00C4A0]">Password updated successfully!</p>
-            </div>
-          )}
-
-          <button
-            onClick={handleChangePassword}
-            disabled={changingPwd}
-            className="w-full py-2.5 rounded bg-[#00C4A0] hover:bg-[#00D4AD] text-[#0B1623] font-semibold text-sm transition-all disabled:opacity-60"
-          >
-            {changingPwd ? "Updating..." : "Update Password"}
-          </button>
+      <div className="bg-[#12143A] rounded-2xl border border-[#04B5A3]/20 overflow-hidden shadow-2xl">
+        {/* Tabs Header */}
+        <div className="flex bg-[#12143A] border-b border-[#04B5A3]/20 ">
+          {[
+            { key: "Account", icon: <CiUser size={18} />, label: "Account" },
+            {
+              key: "Privacy",
+              icon: <GoShieldLock size={18} />,
+              label: "Privacy",
+            },
+            {
+              key: "Notifications",
+              icon: <IoNotificationsOutline size={18} />,
+              label: "Notifications",
+            },
+            {
+              key: "Preferences",
+              icon: <IoSettingsOutline size={18} />,
+              label: "Preferences",
+            },
+          ].map((tab) => (
+            <Tab
+              key={tab.key}
+              active={activeTab === tab.key}
+              onClick={() => setActiveTab(tab.key as any)}
+              icon={tab.icon}
+            >
+              {tab.label}
+            </Tab>
+          ))}
         </div>
-      </Modal>
 
-      {/* ── Delete Account Modal ───────────────────────────────────────────── */}
-      <Modal
-        open={deleteModal}
-        onClose={() => setDeleteModal(false)}
-        title="Delete Account"
-      >
-        <div className="space-y-4">
-          <div className="bg-red-500/10 border border-red-500/20 rounded p-4">
-            <p className="text-sm text-red-300 font-semibold mb-1">⚠️ This action cannot be undone</p>
-            <p className="text-xs text-red-400/80">
-              All your data, matches, profile and history will be permanently
-              deleted and cannot be recovered.
-            </p>
+        {/* Content Area within borders */}
+        <div className="p-6">
+          {activeTab === "Account" && (
+            <div className="space-y-8 animate-in fade-in duration-300">
+              <div>
+                <SectionHeader>Account Actions</SectionHeader>
+                <Row
+                  icon={<IoSettingsOutline className="text-[#00E5FF]" />}
+                  title="Change Password"
+                  description="Update your account password"
+                  control={<ChevronRight />}
+                  onClick={() => setPwdModal(true)}
+                />
+                <Row
+                  icon={<Mail />}
+                  title="Email Preferences"
+                  description="Manage your email settings"
+                  control={<ChevronRight />}
+                />
+              </div>
+
+              <div>
+                <SectionHeader>Active Sessions</SectionHeader>
+                <Row
+                  title="Chrome on Windows"
+                  description="Madrid, Spain • Current session"
+                  control={
+                    <span className="text-[#00E5FF] text-xs">
+                      Current session
+                    </span>
+                  }
+                />
+                <Row
+                  title="Safari on iPhone"
+                  description="Barcelona, Spain"
+                  control={
+                    <button className="text-red-400 hover:text-red-300 text-[11px] font-bold tracking-wider uppercase">
+                      Revoke
+                    </button>
+                  }
+                />
+              </div>
+
+              <div>
+                <Row
+                  icon={<Trash />}
+                  title="Delete Account"
+                  description="Permanently delete your account and data"
+                  control={<span className="text-gray-500">→</span>}
+                  onClick={() => setDeleteModal(true)}
+                />
+              </div>
+
+              <SaveBtn
+                onClick={handleSaveAccount}
+                loading={savingAccount}
+                label="Save Account Settings"
+              />
+            </div>
+          )}
+
+          {activeTab === "Privacy" && (
+            <div className="space-y-8 animate-in fade-in duration-300">
+              <div>
+                <SectionHeader>Profile Visibility</SectionHeader>
+
+                <Row
+                  title="Make my profile visible to clubs"
+                  description="Allow clubs to view your complete profile"
+                  control={
+                    <SquareCheckbox
+                      checked={privacy.visible_to_clubs}
+                      onChange={() =>
+                        setPrivacy((p) => ({
+                          ...p,
+                          visible_to_clubs: !p.visible_to_clubs,
+                        }))
+                      }
+                    />
+                  }
+                />
+
+                <Row
+                  title="Make my profile visible to scouts"
+                  description="Allow scouts to discover your profile"
+                  control={
+                    <SquareCheckbox
+                      checked={privacy.visible_to_scouts}
+                      onChange={() =>
+                        setPrivacy((p) => ({
+                          ...p,
+                          visible_to_scouts: !p.visible_to_scouts,
+                        }))
+                      }
+                    />
+                  }
+                />
+
+                <Row
+                  title="Show my age publicly"
+                  description="Display your age on your profile"
+                  control={
+                    <SquareCheckbox
+                      checked={privacy.show_age_publicly}
+                      onChange={() =>
+                        setPrivacy((p) => ({
+                          ...p,
+                          show_age_publicly: !p.show_age_publicly,
+                        }))
+                      }
+                    />
+                  }
+                />
+              </div>
+
+              <div>
+                <SectionHeader>Contact Privacy</SectionHeader>
+
+                <Row
+                  title="Show contact details publicly"
+                  description="Display email and phone on your profile"
+                  control={
+                    <SquareCheckbox
+                      checked={privacy.show_contact_publicly}
+                      onChange={() =>
+                        setPrivacy((p) => ({
+                          ...p,
+                          show_contact_publicly: !p.show_contact_publicly,
+                        }))
+                      }
+                    />
+                  }
+                />
+
+                <Row
+                  title="Allow direct messages"
+                  description="Receive messages from clubs and scouts"
+                  control={
+                    <SquareCheckbox
+                      checked={privacy.allow_direct_messages}
+                      onChange={() =>
+                        setPrivacy((p) => ({
+                          ...p,
+                          allow_direct_messages: !p.allow_direct_messages,
+                        }))
+                      }
+                    />
+                  }
+                />
+              </div>
+
+              <div>
+                <SectionHeader>Data & Privacy</SectionHeader>
+                <Row
+                  icon={<GoShieldLock className="text-[#00E5FF]" />}
+                  title="Download My Data"
+                  description="Export all your personal data"
+                  control={
+                    <button
+                      onClick={handleDownloadData}
+                      className="text-[#00E5FF] hover:text-[#00c9e0] text-sm font-semibold transition-colors"
+                    >
+                      Download
+                    </button>
+                  }
+                />
+              </div>
+
+              <SaveBtn
+                onClick={handleSavePrivacy}
+                loading={savingPrivacy}
+                label="Save Privacy Settings"
+              />
+            </div>
+          )}
+
+          {activeTab === "Notifications" && (
+            <div className="space-y-8 animate-in fade-in duration-300">
+              <div>
+                <SectionHeader>Email Notifications</SectionHeader>
+                <Row
+                  title="New message notifications"
+                  description="Get notified when you receive new messages"
+                  control={
+                    <Toggle
+                      checked={notif.email_new_messages}
+                      onChange={() =>
+                        setNotif((n) => ({
+                          ...n,
+                          email_new_messages: !n.email_new_messages,
+                        }))
+                      }
+                    />
+                  }
+                />
+                <Row
+                  title="Event reminders"
+                  description="Receive reminders for upcoming events"
+                  control={
+                    <Toggle
+                      checked={notif.email_event_reminders}
+                      onChange={() =>
+                        setNotif((n) => ({
+                          ...n,
+                          email_event_reminders: !n.email_event_reminders,
+                        }))
+                      }
+                    />
+                  }
+                />
+                <Row
+                  title="Profile views"
+                  description="Know when clubs or scouts view your profile"
+                  control={
+                    <Toggle
+                      checked={notif.email_profile_views}
+                      onChange={() =>
+                        setNotif((n) => ({
+                          ...n,
+                          email_profile_views: !n.email_profile_views,
+                        }))
+                      }
+                    />
+                  }
+                />
+                <Row
+                  title="News & updates"
+                  description="Receive platform news and training content"
+                  control={
+                    <Toggle
+                      checked={notif.email_news_updates}
+                      onChange={() =>
+                        setNotif((n) => ({
+                          ...n,
+                          email_news_updates: !n.email_news_updates,
+                        }))
+                      }
+                    />
+                  }
+                />
+              </div>
+
+              <div>
+                <SectionHeader>Push Notifications</SectionHeader>
+                <Row
+                  title="Enable push notifications"
+                  description="Receive real-time notifications"
+                  control={
+                    <Toggle
+                      checked={notif.push_enabled}
+                      onChange={() =>
+                        setNotif((n) => ({
+                          ...n,
+                          push_enabled: !n.push_enabled,
+                        }))
+                      }
+                    />
+                  }
+                />
+                <Row
+                  title="Sound for notifications"
+                  description="Play sound when notifications arrive"
+                  control={
+                    <Toggle
+                      checked={notif.push_sound}
+                      onChange={() =>
+                        setNotif((n) => ({ ...n, push_sound: !n.push_sound }))
+                      }
+                    />
+                  }
+                />
+              </div>
+
+              <SaveBtn
+                onClick={handleSaveNotifications}
+                loading={savingNotif}
+                label="Save Notification Settings"
+              />
+            </div>
+          )}
+
+          {activeTab === "Preferences" && (
+            <div className="space-y-8 animate-in fade-in duration-300">
+              <div>
+                <SectionHeader>Language & Region</SectionHeader>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
+                  <div className="space-y-2">
+                    <label className="text-xs text-[#8A9ABF]">Language</label>
+                    <select
+                      value={account.language}
+                      onChange={(e) =>
+                        setAccount((a) => ({ ...a, language: e.target.value }))
+                      }
+                      className="w-full bg-[#0F122B] border border-white/5 rounded-lg px-4 py-3 text-white text-sm outline-none appearance-none hover:border-white/10"
+                    >
+                      <option>English</option>
+                      <option>Spanish</option>
+                      <option>French</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs text-[#8A9ABF]">Timezone</label>
+                    <select
+                      value={account.timezone}
+                      onChange={(e) =>
+                        setAccount((a) => ({ ...a, timezone: e.target.value }))
+                      }
+                      className="w-full bg-[#0F122B] border border-white/5 rounded-lg px-4 py-3 text-white text-sm outline-none appearance-none hover:border-white/10"
+                    >
+                      <option>GMT+1 (Madrid)</option>
+                      <option>UTC</option>
+                      <option>GMT+6 (Dhaka)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <SectionHeader>Search Preferences</SectionHeader>
+
+                <Row
+                  title="Save search history"
+                  description="Remember your recent searches"
+                  control={
+                    <SquareCheckbox
+                      checked={account.save_search_history}
+                      onChange={() =>
+                        setAccount((a) => ({
+                          ...a,
+                          save_search_history: !a.save_search_history,
+                        }))
+                      }
+                    />
+                  }
+                />
+
+                <Row
+                  title="Show event recommendations"
+                  description="Get personalized event suggestions"
+                  control={
+                    <SquareCheckbox
+                      checked={account.show_event_recommendations}
+                      onChange={() =>
+                        setAccount((a) => ({
+                          ...a,
+                          show_event_recommendations:
+                            !a.show_event_recommendations,
+                        }))
+                      }
+                    />
+                  }
+                />
+              </div>
+
+              <SaveBtn
+                onClick={handleSaveAccount}
+                loading={savingAccount}
+                label="Save Preferences"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Change Password Modal ────────────────────── */}
+      {pwdModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#0F122B] border border-white/5 rounded-2xl p-7 w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-[17px] font-bold text-white">
+                Change Password
+              </h2>
+              <button
+                onClick={() => setPwdModal(false)}
+                className="text-[#8A9ABF] hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-5">
+              <div>
+                <label className="block text-xs text-[#8A9ABF] mb-2">
+                  Current Password
+                </label>
+                <input
+                  type="password"
+                  value={pwdForm.old_password}
+                  onChange={(e) =>
+                    setPwdForm((f) => ({ ...f, old_password: e.target.value }))
+                  }
+                  className="w-full bg-[#1A1D36] border border-white/5 rounded-lg px-4 py-3 text-white text-sm focus:border-[#00E5FF] outline-none placeholder-gray-500"
+                  placeholder="••••••••"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs text-[#8A9ABF] mb-2">
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  value={pwdForm.new_password}
+                  onChange={(e) =>
+                    setPwdForm((f) => ({ ...f, new_password: e.target.value }))
+                  }
+                  className="w-full bg-[#1A1D36] border border-white/5 rounded-lg px-4 py-3 text-white text-sm focus:border-[#00E5FF] outline-none placeholder-gray-500"
+                  placeholder="••••••••"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs text-[#8A9ABF] mb-2">
+                  Confirm New Password
+                </label>
+                <input
+                  type="password"
+                  value={pwdForm.confirm_password}
+                  onChange={(e) =>
+                    setPwdForm((f) => ({
+                      ...f,
+                      confirm_password: e.target.value,
+                    }))
+                  }
+                  className="w-full bg-[#1A1D36] border border-white/5 rounded-lg px-4 py-3 text-white text-sm focus:border-[#00E5FF] outline-none placeholder-gray-500"
+                  placeholder="••••••••"
+                />
+              </div>
+
+              {pwdError && <p className="text-red-400 text-xs">{pwdError}</p>}
+              {pwdSuccess && (
+                <p className="text-[#00E5FF] text-xs">
+                  Password updated successfully!
+                </p>
+              )}
+
+              <button
+                onClick={handleChangePassword}
+                disabled={changingPwd}
+                className="w-full mt-2 py-4 bg-[#00E5FF] hover:bg-[#00D4FF] text-black font-bold rounded-xl transition-all disabled:opacity-60 text-sm"
+              >
+                {changingPwd ? "Updating..." : "Update Password"}
+              </button>
+            </div>
           </div>
-          <div className="flex gap-3">
-            <button
-              onClick={() => setDeleteModal(false)}
-              className="flex-1 py-2.5 rounded border border-[#1E3048] text-[#7A9AB8] hover:text-white text-sm font-medium transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleDeleteAccount}
-              className="flex-1 py-2.5 rounded bg-red-500 hover:bg-red-400 text-white font-semibold text-sm transition-all"
-            >
+        </div>
+      )}
+
+      {/* Delete modal */}
+      {deleteModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#0F122B] border border-white/5 rounded-2xl p-7 w-full max-w-md">
+            <h2 className="text-[17px] font-bold text-white mb-2">
               Delete Account
-            </button>
+            </h2>
+            <p className="text-xs text-[#8A9ABF] mb-6 leading-relaxed">
+              This action cannot be undone. All your data will be permanently
+              deleted.
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setDeleteModal(false)}
+                className="flex-1 py-4 bg-transparent border border-white/5 hover:bg-white/5 rounded-xl text-white text-sm font-semibold transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                className="flex-1 py-4 bg-red-500 hover:bg-red-600 rounded-xl text-white text-sm font-bold transition-all"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
-      </Modal>
+      )}
     </div>
   );
 }

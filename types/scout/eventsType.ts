@@ -10,6 +10,9 @@ export interface Event {
   event_date: string;
   event_time: string | null;
   venue_name: string;
+  start_time: string;
+  end_time: string;
+  street_address: string;
   venue_address: string;
   minimum_age: number;
   maximum_age: number;
@@ -17,7 +20,7 @@ export interface Event {
   maximum_capacity: number;
   status: EventStatus;
   is_featured: boolean;
-  description: string | null;   // ← Fix #1: was missing
+  description: string | null; // ← Fix #1: was missing
   views_count: number;
   created_at: string;
   updated_at: string;
@@ -26,12 +29,11 @@ export interface Event {
   pending_count: number;
   capacity_filled_percentage: number;
   is_full: boolean;
-  location: string;  // ← Fix #2: was missing
-  country:string
-  title?: string;  
-  fee?:string   
-city :string
-
+  location: string; // ← Fix #2: was missing
+  country: string;
+  title?: string;
+  fee?: string;
+  city: string;
 }
 
 export interface EventListResponse {
@@ -39,7 +41,6 @@ export interface EventListResponse {
   next: string | null;
   previous: string | null;
   results: Event[];
-
 }
 
 export interface ClubDetails {
@@ -57,7 +58,14 @@ export interface ClubDetails {
 export interface EventRegistration {
   id: number;
   event: number;
-  event_details: Omit<Event, "updated_at" | "confirmed_count" | "pending_count" | "views_count" | "is_featured">;
+  event_details: Omit<
+    Event,
+    | "updated_at"
+    | "confirmed_count"
+    | "pending_count"
+    | "views_count"
+    | "is_featured"
+  >;
   first_name: string;
   last_name: string;
   email: string;
@@ -104,5 +112,3 @@ export interface RegisterForEventResponse {
   scout: number;
   event: number;
 }
-
-
